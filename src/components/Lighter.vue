@@ -20,17 +20,79 @@
         ></div>
       </div>
     </div>
-    <div class="timer">timer</div>
+
+    <div class="timer">
+      Времени до перехода: &nbsp;{{ time }}{{ isBlinking }}
+    </div>
   </div>
 </template>
 
 <script>
+import { loop } from "../hooks/useTimerChange"
+import { useLocalStorage } from "../hooks/useLocalStorage"
+import { useStartPosition } from "../hooks/useStartPosition"
+import { useRouter } from "vue-router"
+import anime from "animejs/lib/anime.es.js"
+
 export default {
+  computed: {
+    isBlinking: function () {
+      if (this.router.currentRoute.value.params.time < 3) {
+        this.animate()
+      }
+    },
+  },
+  setup(props) {
+    const router = useRouter()
+    const { direction, time, name } = useStartPosition(router)
+    return {
+      router,
+      direction,
+      time,
+      name,
+    }
+  },
+  data() {
+    return {
+      listener: () => {},
+      tempColor: "",
+    }
+  },
+  methods: {
+    animate() {
+      if (this.isActive === "red") {
+        this.tempColor = "#ff3b3b"
+      } else if (this.isActive === "yellow") {
+        this.tempColor = "#fffc3b"
+      } else {
+        this.tempColor = "#2ecc71"
+      }
+      let arr = [
+        { background: "rgb(255,255,255)" },
+        { background: `${this.tempColor}` },
+      ]
+      anime({
+        easing: "easeOutExpo",
+        duration: 250,
+        targets: `.isActive_${this.isActive}`,
+        keyframes: arr,
+      })
+    },
+  },
   props: {
     isActive: {
       type: String,
-      required: false,
     },
+    time: {
+      type: String,
+    },
+  },
+  mounted() {
+    loop(this.$router, this.direction, this.time, this.name)
+    this.listener = useLocalStorage(this.$router)
+  },
+  beforeUnmount() {
+    window.removeEventListener("beforeunload", this.listener)
   },
 }
 </script>
@@ -52,12 +114,14 @@ export default {
 }
 
 .wrapper {
+  max-width: 1024px;
   display: flex;
   position: relative;
   margin: 0 auto;
   padding: 0 20px;
   max-width: 1024px;
   margin-top: 20px;
+  justify-content: space-evenly;
 }
 .lighter {
   border-radius: 10px;
@@ -87,6 +151,23 @@ export default {
     &_yellow {
       background: #fffc3b;
     }
+  }
+}
+.bounce-enter-active {
+  animation: bounce-in 0.5s;
+}
+.bounce-leave-active {
+  animation: bounce-in 0.5s reverse;
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 

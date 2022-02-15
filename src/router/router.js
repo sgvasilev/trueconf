@@ -7,6 +7,7 @@ const routes = [
   {
     path: "/",
     component: TrafficLighter,
+    props: true,
   },
   {
     path: "/yellow",

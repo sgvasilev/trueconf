@@ -33,9 +33,8 @@ module.exports = {
     }),
 
     new HtmlWebpackPlugin({
-      //favicon: paths.src + "/images/favicon.png",
-      template: paths.public + "/index.html", // template file
-      filename: "index.html", // output file
+      template: paths.public + "/index.html",
+      filename: "index.html",
     }),
     new webpack.DefinePlugin({
       __VUE_OPTIONS_API__: true,

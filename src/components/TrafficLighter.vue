@@ -1,80 +1,27 @@
 <template></template>
 
 <script>
+import { useLocalStorage } from "../hooks/useLocalStorage"
 export default {
-  methods: {
-    sleep(ms) {
-      return new Promise((resolve) => {
-        setTimeout(() => resolve(), ms)
-      })
-    },
-
-    renew() {
-      return function () {
-        this.sleep(this.timerDuration[this.i]).then(() => {
-          this.$router.push({
-            name: this.name,
-            params: {
-              isActive: this.name,
-              direction: this.direction,
-              time: this.time,
-            },
-          })
-          if (this.steps[this.i] === "red") {
-            this.direction = "forwards"
-            this.name = this.steps[this.i]
-            this.i += 1
-          } else if (this.steps[this.i] === "green") {
-            this.direction = "backwards"
-            this.name = this.steps[this.i]
-            this.i -= 1
-          } else if (this.direction === "forwards") {
-            this.name = this.steps[this.i]
-            this.i += 1
-          } else {
-            this.name = this.steps[this.i]
-            this.i -= 1
-          }
-          this.startLoop()
-        })
-      }
-    },
-  },
   data() {
     return {
-      steps: ["red", "yellow", "green"],
-      timerDuration: [500, 500, 500],
-      direction: "forwards",
-      name: "green",
-      startLoop: this.renew(),
-      i: 0,
+      listener: () => {},
     }
   },
   mounted() {
-    if (localStorage.name && localStorage.direction && localStorage.time) {
-      this.direction = localStorage.direction
-      this.name = localStorage.name
-      this.time = localStorage.time
-      this.$router.push({
-        name: this.name,
-        params: {
-          isActive: this.name,
-          direction: this.direction,
-          time: this.time,
-        },
-      })
-    } else {
-      localStorage.name = this.name
-      localStorage.direction = this.direction
-      localStorage.time = this.time
-    }
-
-    this.startLoop()
+    this.$router.push({
+      name: "green",
+      params: {
+        direction: "backwards",
+        isActive: "green",
+        time: 2,
+      },
+    })
+    this.listener = useLocalStorage(this.$router)
   },
   beforeUnmount() {
-    localStorage.name = "green"
+    window.removeEventListener("beforeunload", this.listener)
   },
 }
 </script>
-
 <style lang="css" scoped></style>
